@@ -54,11 +54,28 @@ Approach that I have used is to ensemble different resampled datasets. So we bui
 </br>
 </br>
 
-# **Model Architecture:**   </br>
+# **Working:**   </br>
 
-Candinate Generation model
+Recomendation for given customer is divided in to two part: </br>
+1) Candinate Generation</br>
+2) Rank the generated candinates</br>
 
+1) **Candinate Generation model**
+For candinate generation consider have use stragey:
+Stragey 1:
+    - Item user has purchase in last 1 week. 
+    - Find similar user who have puchase those same items. 
+    - Recommend the other items that simliary users has purchase in last 1 week
+
+Stragey 2:
+    - Recommend most populary item in last 1 week and 
+
+**Model Architecture:** 
 ![](references\model.png)
+
+2) Rank the generated candinates
+
+
 
 </br>
 </br>
@@ -74,7 +91,8 @@ Candinate Generation model
 
 # **Data Source** #
                  
-Downloaded the data : [kaggle link](https://www.kaggle.com/competitions/h-and-m-personalized-fashion-recommendations/data)
+Step 1: Downloaded the data : [kaggle link](https://www.kaggle.com/competitions/h-and-m-personalized-fashion-recommendations/data)
+Step 2: Extract and copy the files in the data/raw/ folder
 </br>
 </br>
 
@@ -82,5 +100,3 @@ Downloaded the data : [kaggle link](https://www.kaggle.com/competitions/h-and-m-
 Refer requirements.txt 
 </br>
 </br>
-
-

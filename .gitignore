@@ -11,10 +11,9 @@ env/
 build/
 src.egg-info/
 dist/
-# exclude data from source control by default
+#exclude data from source control by default
 data/
-#exclude log files 
-logs/log_files/
+
 #exclude feast data
 feature_store/online_store.db
 feature_store/Readme_FEAST.txt
