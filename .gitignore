@@ -1,0 +1,28 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+build/
+src.egg-info/
+dist/
+# exclude data from source control by default
+data/
+#exclude log files 
+logs/log_files/
+#exclude feast data
+feature_store/online_store.db
+feature_store/Readme_FEAST.txt
+feature_store/registry.db
+#exclude the model and there metric files from github
+models/
+
+#exception to the rule
+!/logs/output/.gitkeep
+!/data/.gitkeep
+!/models/.gitkeep

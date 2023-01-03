@@ -1,0 +1,8 @@
+project: feature_repo
+registry: registry.db
+provider: local
+online_store:
+    path: online_store.db
+entity_key_serialization_version: 2  #This is required from 0.23.0 version onwards for the Int64/Float64 issue
+
+    

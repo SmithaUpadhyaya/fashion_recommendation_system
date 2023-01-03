@@ -1,0 +1,130 @@
+
+data_source:
+      data_folders: data
+      raw_data_folder: raw
+      interim_data_folder: interim
+      processed_data_folder: processed
+      feature_folder: features
+
+      image_data: images
+      article_data: articles.csv
+      customer_data: customers.csv
+      transaction_data: transactions_train.csv
+      item_image_missing: article_image_missing.npz
+
+      clean_transaction_data: transaction.parquet
+      train_data: train.parquet
+      test_data: test.parquet
+
+      clean_customer_data: customers.parquet
+      customer_user_mapping_data : customers_mapping.parquet
+
+      clean_article_data: articles.parquet
+      article_item_mapping_data : articles_mapping.parquet
+
+      training_data: train_8Week_pos_neg_sample_data.parquet
+      testing_data: test_1day_pos_neg_sample_data.parquet
+
+feature_store:
+            feature_store_folder: feature_store
+
+customer_features:
+                  customer_folder: user
+                  user_purchase_elapsed_days_from_previous_tran : user_purchase_elapsed_days_from_previous_tran.parquet
+                  user_percentage_product_type_purchase: user_pct_purchase_by_product_type.parquet
+                  user_percentage_product_type_purchase_last_8week: user_pct_purchase_by_product_type_last_8week.parquet
+                  user_avg_median_purchase_price: user_avg_median_purchase_price.parquet
+                  user_avg_median_purchase_price_last_8week: user_avg_median_purchase_price_last_8week.parquet
+
+article_feature:
+                  article_folder: item                  
+                  item_avg_median_sales_price : item_avg_median_sales_price.parquet
+                  item_prev_days_sales_count: item_previous_days_sales_count.parquet
+                  #item_sales_count: item_sales_count_prev_day.parquet #This was a temp file that store sales count of all the item of only last 1 date.
+
+customer_map:
+            customerid_to_userid: customer_to_user_id_mapping.pkl
+
+article_map:
+            articleid_to_itemid: article_to_item_id_mapping.pkl
+
+model:
+      output_folder: models
+
+image-based-ensemble-models:
+                              models-ensemble-outputs-folder: image_based_ensemble_models
+                              ensemble_folder: ensemble_{ensemble:d}
+                              end_of_training_loss: '/ensemble_{ensemble:d}/training/'
+                              training_model_loss: '/ensemble_{ensemble:d}/training/loss/'
+                              saved_training_model: '/ensemble_{ensemble:d}/training/model/{epoch:d}/'
+                              saved_model: 'Img_Rec_model.h5'
+
+                              number_ensemble_models: 6
+                              epochs: 10
+                              param : 
+                                    SEED: 42
+                                    EMBEDDING_U : 100
+                                    EMBEDDING_I : 100 
+                                    EMBEDDING_IMG : 200
+                                    INTER_EMBEDDING_I : 50 
+                                    FINE_TUNE_LAYERS : 15
+                                    
+                                    L2_reg : 0.05
+                                    LEARNING_RATE : 0.01 
+                                    GLOBAL_BATCH_SIZE  : 2048  
+                                    EPOCHS : 15
+                                    IMAGE_SIZES : 244  
+                                    CHANNEL : 3
+
+                              ensemble-thresholds: 
+                                          0: 0.4
+                                          1: 0.4
+                                          2: 0.4 #Model perform worst
+                                          3: 0.1 #Model perform worst
+                                          4: 0.35
+                                          5: 0.4
+                                                   
+                              
+
+lightgbm-param:
+            ranking-model-output-folder: ranking_model
+            #ranking-model-5feature-folder: Only5Features
+            param: 
+                  n_estimators: 788
+                  learning_rate : 0.089281
+                  max_depth : 7
+                  reg_alpha : 0.579761
+                  reg_lambda: 0.847348
+                  num_leaves : 192
+                  min_data_in_leaf: 49
+                  colsample_bytree: 0.508170
+                  pos_bagging_fraction: 1        
+                  neg_bagging_fraction: 0.007
+                  bagging_freq: 3         
+                  max_bin : 255
+                  boosting_type : 'gbdt'
+                  objective: 'lambdarank'                                
+                  seed : 42
+                  device_type: 'gpu'
+                  num_gpu: 2
+                  metric: "ndcg"           
+                  eval_at: [5, 10, 15]
+                  
+            saved_model: lightgbm_ranker.json
+            saved_engg_pipeline: feature_engg_pipeline.json
+
+candidate-popular-items-last-year:
+                                 popular-items-last-year-folder: candidate-popular-items-last-year
+                                 popular-items-last-year-output: popular-items-last-year-same-time.json
+
+candidate-item-purchase-together:
+                                 item-purchase-together-folder: candidate-item-purchase-together
+                                 item-purchase-together-output: paired_items_together.json
+
+      
+      
+
+
+
+      
+
