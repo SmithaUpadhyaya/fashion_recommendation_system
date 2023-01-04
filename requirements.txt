@@ -1,12 +1,14 @@
 # local package
 -e .
+
 #Python Version 3.9.8
 # external requirements
-protobuf==3.20.2 #Version that is compatibile with tensorflow and Feast
-numpy==1.19.5 #Version that is compatibile with tensorflow and Feast
-pandas==1.3.5 #Version that is compatibile with tensorflow and Feast
+tensorflow==2.9.0  
+pandas==1.5.2 
+feast==0.23.0
+numpy==1.24.1 
+protobuf==3.20.3 
 pandavro==1.5.2
-tensorflow==2.6.2 #Tensorflow 2.6.2 require numpy=1.19 which is incompatible with FEAST 0.23.0 so had to lower the FEAST version that is compatible to numpy and protobuf 
 matplotlib==3.5.3
 sklearn==0.0.post1
 category_encoders==2.5.1.post0
@@ -18,8 +20,6 @@ dill==0.3.6
 cv==1.0.0
 pyarrow==8.0.0
 fastparquet==0.8.1
-feast==0.19.3 #Release on 09-03-2022. Version is compatible with tensorflow, protobuf and numpy
-typing-extensions==4.4.0
 streamlit==1.16.0 
 
 #Library used in the notebooks if required can be installed seperately

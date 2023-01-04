@@ -113,7 +113,7 @@ class Recommendation:
             self.resnet_obj = resnet_based_prevence(False)
 
         #Find relevent score/y_hat of candinate items
-        df_relevent_items = self.resnet_obj.predict(customer_id, candinate_items)
+        df_relevent_items = self.resnet_obj.predict(customer_id, candinate_items, -1)
         #customer_id,article_id, y_hat
         return df_relevent_items
 

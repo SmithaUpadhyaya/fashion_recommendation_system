@@ -54,10 +54,12 @@ model:
 image-based-ensemble-models:
                               models-ensemble-outputs-folder: image_based_ensemble_models
                               ensemble_folder: ensemble_{ensemble:d}
+                              merge_ensemble: merge_ensemble
                               end_of_training_loss: '/ensemble_{ensemble:d}/training/'
                               training_model_loss: '/ensemble_{ensemble:d}/training/loss/'
                               saved_training_model: '/ensemble_{ensemble:d}/training/model/{epoch:d}/'
                               saved_model: 'Img_Rec_model.h5'
+                              merge_ensemble_saved_model: 'merge_ensemble_output.h5'
 
                               number_ensemble_models: 6
                               epochs: 10
@@ -83,6 +85,9 @@ image-based-ensemble-models:
                                           3: 0.1 #Model perform worst
                                           4: 0.35
                                           5: 0.4
+
+                              merge-ensemble-threshold:
+                                          threshold: 0.5
                                                    
                               
 

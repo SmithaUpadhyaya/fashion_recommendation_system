@@ -37,10 +37,11 @@ class resnet_based_prevence:
 
         self.is_training = is_training 
         self.config_path = config_path       
-        self.model_threshold = {}
+        self.ensemble_model_thresholds = {}
         self.all_models = []
-        
-
+        self.merge_stack_model = None
+        self.model_thresholds = 0.5
+       
     def generate_data_for_nth_ensemble_model(self, train_tran, ensemble_model_number, pos_neg_ratio):
     
         #Split -ve and +ve sample from dataset
@@ -95,6 +96,26 @@ class resnet_based_prevence:
         gc.collect()
         
         return df_train_tran
+
+    def feature_eng(self, X):
+
+        log.write_log('Transform mapping customer/article to user/item started...', log.logging.DEBUG)
+        engg = Pipeline( steps = [
+                                        ('transform_article_mapping', transform_article_mapping(config_path = self.config_path)),
+
+                                        ('transform_customer_mapping', transform_customer_mapping(hash_conversion = True, config_path = self.config_path)),
+        ])
+
+        X = engg.fit_transform(X)  
+        log.write_log('Transform mapping customer/article to user/item completed...', log.logging.DEBUG)
+
+        log.write_log(f'Map article id to image path started for {str(X.shape[0])}...', log.logging.DEBUG)
+        X['image_path'] = list(map(get_image_path, X['article_id']))
+        log.write_log('Map article id to image path completed...', log.logging.DEBUG)
+
+        X = X[X.image_path != ""]
+
+        return X
 
     def model_def(self, parms, unique_user, unique_item):
 
@@ -226,25 +247,29 @@ class resnet_based_prevence:
 
         return Img_Rec
 
-    def feature_eng(self, X):
+    def train_merge_model_def(self):
 
-        log.write_log('Transform mapping customer/article to user/item started...', log.logging.DEBUG)
-        engg = Pipeline( steps = [
-                                        ('transform_article_mapping', transform_article_mapping(config_path = self.config_path)),
+        Merge_Ensemble_Rec = tf.keras.Sequential()
+    
+        Merge_Ensemble_Rec.add(tf.keras.layers.Input(shape=(4,), name = 'input'))
+        Merge_Ensemble_Rec.add(tf.keras.layers.Dense(5, activation = 'sigmoid', name = 'layer_1'))
+        #model.add(tf.keras.layers.Dense(2, activation = 'sigmoid', name = 'layer_2')) #Adding new layer is not helping as recll and preciesson turn to be 0
+        #model.add(tf.keras.layers.Dense(1, activation = 'relu', name = 'layer_2'))
+        Merge_Ensemble_Rec.add(tf.keras.layers.Dense(1, activation = 'sigmoid', name = 'output'))
+        hp_learning_rate = 0.4
 
-                                        ('transform_customer_mapping', transform_customer_mapping(hash_conversion = True, config_path = self.config_path)),
-        ])
-
-        X = engg.fit_transform(X)  
-        log.write_log('Transform mapping customer/article to user/item completed...', log.logging.DEBUG)
-
-        log.write_log(f'Map article id to image path started for {str(X.shape[0])}...', log.logging.DEBUG)
-        X['image_path'] = list(map(get_image_path, X['article_id']))
-        log.write_log('Map article id to image path completed...', log.logging.DEBUG)
-
-        X = X[X.image_path != ""]
-
-        return X
+        Merge_Ensemble_Rec.compile(
+              optimizer = tf.keras.optimizers.Adam(learning_rate = hp_learning_rate),
+              loss = tf.keras.losses.BinaryCrossentropy(),
+              metrics = [tf.keras.metrics.Recall(name = "recall"), 
+                         #tf.keras.metrics.Precision(name = "precision"),
+                         tf.keras.metrics.TruePositives(name = "true_positives"),
+                         #tf.keras.metrics.FalsePositives(name = "false_positives"),
+                         tf.keras.metrics.FalseNegatives(name = "false_negatives")
+                        ]
+              )
+        
+        return Merge_Ensemble_Rec
 
     def train(self, X):
 
@@ -350,7 +375,7 @@ class resnet_based_prevence:
             del [train_batch]
             gc.collect()
 
-    def load_all_image_based_resnet_models(self, n_models = -1 ):
+    def load_all_image_based_models(self, n_models = -1 ):
 
         """
         load models of image based model that is trained on different set of negative sample 
@@ -361,14 +386,21 @@ class resnet_based_prevence:
             log.write_log('Load model started...', log.logging.DEBUG)
             models_paths = os.path.join( 
                                         hlpread.read_yaml_key(CONFIGURATION_PATH, 'model', 'output_folder'),
-                                        hlpread.read_yaml_key(CONFIGURATION_PATH, 'image-based-ensemble-models', 'models-ensemble-outputs-folder')
+                                        hlpread.read_yaml_key(CONFIGURATION_PATH, 'image-based-ensemble-models', 'models-ensemble-outputs-folder'),
                                         )
+            #ensemble_models_paths = models_paths
 
-            ensemble = 'ensemble_{ensemble:d}'
-            ensemble_models_paths = os.path.join(  models_paths,
-                                                    ensemble,
-                                                    'Img_Rec_model.h5'
-                                                    #'Img_Rec_model.json'
+            #ensemble = 'ensemble_{ensemble:d}'
+            ensemble_models_paths = os.path.join(models_paths,
+                                                 hlpread.read_yaml_key(CONFIGURATION_PATH, 
+                                                                      'image-based-ensemble-models', 
+                                                                      'ensemble_folder'),
+                                                 hlpread.read_yaml_key(CONFIGURATION_PATH, 
+                                                                      'image-based-ensemble-models', 
+                                                                      'saved_model')
+            #                                     ensemble,
+            #                                     'Img_Rec_model.h5'
+            #                                     #'Img_Rec_model.json'
                                                 )    
 
             self.all_models = []
@@ -392,12 +424,32 @@ class resnet_based_prevence:
                     log.write_log(f'Ensemble model: {model_path} does not exists.', log.logging.DEBUG) 
 
             log.write_log('Load model completed...', log.logging.DEBUG)
+
+        if self.merge_stack_model == None:
+
+            log.write_log('Load merge ensemble started...', log.logging.DEBUG)
+
+            models_paths = os.path.join( 
+                                        hlpread.read_yaml_key(CONFIGURATION_PATH, 'model', 'output_folder'),
+                                        hlpread.read_yaml_key(CONFIGURATION_PATH, 'image-based-ensemble-models', 'models-ensemble-outputs-folder'),
+                                        hlpread.read_yaml_key(CONFIGURATION_PATH, 'image-based-ensemble-models', 'merge_ensemble'),
+                                        hlpread.read_yaml_key(CONFIGURATION_PATH, 'image-based-ensemble-models', 'merge_ensemble_saved_model'),
+                                        )
+
+            self.merge_stack_model = load_model(models_paths)
+            self.model_thresholds = self.merge_ensemble_threshold()
+            log.write_log('Load merge ensemble completed...', log.logging.DEBUG)
             
     def load_theshold_model(self, nmodel):
 
         threshold = hlpread.read_yaml_key(CONFIGURATION_PATH, 'image-based-ensemble-models', 'ensemble-thresholds')
-        self.model_threshold[nmodel] = threshold[nmodel]
+        self.ensemble_model_thresholds[nmodel] = threshold[nmodel]
+
+    def merge_ensemble_threshold(self):
+
+        return hlpread.read_yaml_key(CONFIGURATION_PATH, 'image-based-ensemble-models', 'merge-ensemble-threshold')['threshold']
         
+
     def stacked_predict(self, predict_batch):
         
         """
@@ -416,17 +468,20 @@ class resnet_based_prevence:
             for i, model in enumerate(self.all_models):
                 yhat = model.predict([Users, Items, Image_Embeddings])
                 yhat = tf.nn.sigmoid(yhat)
-                dfparam['y_hat_'+ str(i) ] = transform_logist_label(yhat, self.model_threshold[i])
+                dfparam['y_hat_'+ str(i) ] = yhat
+                #dfparam['y_hat_'+ str(i) ] = transform_logist_label(yhat, self.ensemble_model_thresholds[i])
 
             stackX = pd.concat([stackX, dfparam], axis = 0)
 
             del [Users, Items, Image_Embeddings]
             gc.collect()
 
-        col = ['y_hat_' + str(x) for x in self.model_threshold.keys()] 
-        stackX['y_hat'] = np.squeeze( mode(stackX[col], axis = 1)[0])
+        #col = ['y_hat_' + str(x) for x in self.ensemble_model_thresholds.keys()] 
+        #stackX['y_hat'] = np.squeeze( mode(stackX[col], axis = 1)[0])
+        col = ['y_hat_' + str(x) for x in range(0, len(self.all_models))]
+        stackX = stackX[col]
         """
-        for i, x in enumerate(self.model_threshold.keys()):
+        for i, x in enumerate(self.ensemble_model_thresholds.keys()):
             
             col = 'y_hat_' + str(x)
             if i == 0:
@@ -437,9 +492,9 @@ class resnet_based_prevence:
 
         return stackX
     
-    def predict(self, customer_id , relevent_recommend_articleids, n_models = 5): #n_models = -1
+    def predict(self, customer_id , relevent_recommend_articleids, n_models = -1): 
 
-        self.load_all_image_based_resnet_models(n_models)
+        self.load_all_image_based_models(n_models)
 
         predict_user_liking = pd.DataFrame()
         predict_user_liking['customer_id'] = [customer_id] * len(relevent_recommend_articleids)
@@ -457,23 +512,17 @@ class resnet_based_prevence:
                        .batch(126)                             
                        )
         
-        yhat = self.stacked_predict(predict_batch)
+        stack_yhat = self.stacked_predict(predict_batch)
 
+        #Calculate final merge ensemble y predict
+        y_predict = self.merge_stack_model.predict(stack_yhat)
+        yhat = y_predict >= self.model_thresholds
 
         del [predict_batch]
         gc.collect()
 
-        predict_user_liking = predict_user_liking.merge(yhat, on = ['user_id', 'item_id'], how = 'inner')
-        predict_user_liking = predict_user_liking[predict_user_liking.y_hat] #Get list of items user might like
+        #predict_user_liking = predict_user_liking.merge(yhat, on = ['user_id', 'item_id'], how = 'inner') #Old code that merge the stacked y_predict with main
+        predict_user_liking['y_predict'] = yhat
+        predict_user_liking = predict_user_liking[predict_user_liking.y_predict] #Get list of items user might like
 
-        return predict_user_liking
-
-        #relevent_item = list(yhat[yhat.rank == True].item_id)
-        #relevent_item = self.article_mapping_obj.inverse_transform(relevent_item)
-        #return relevent_item 
-        
-
-       
-
-
-        
+        return predict_user_liking   

@@ -64,19 +64,19 @@ def main():
         cnt = 0 
         cols = st.columns(5)
         for i in range(5):
-            cols[i].header(items[cnt])
+            #cols[i].header(items[cnt])
             cols[i].image(image_path[cnt])
             cnt += 1        
         
         cols = st.columns(5)
         for i in range(5):
-            cols[i].header(items[cnt])
+            #[i].header(items[cnt])
             cols[i].image(image_path[cnt])
             cnt += 1
 
         cols = st.columns(5)
         for i in range(5):
-            cols[i].header(items[cnt])
+            #cols[i].header(items[cnt])
             cols[i].image(image_path[cnt])
             cnt += 1
           

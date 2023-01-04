@@ -1,6 +1,4 @@
-Note: delete this line later Ctrl+Shift+V to view the read me in the product editore
-
-![](references\banner.png)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="references\demo.gif" width="900" height="300" />
 
 # **H&M Fashion Recommendation System** #
 
@@ -18,23 +16,38 @@ Product recommendations are key to enhance customer exeperiance and help them to
 </br>
 
 # **Solution** #
-Solution proposed is based on the research paper ["End-to-End Image-Based Fashion Recommendation"](https://arxiv.org/abs/2205.02923) by Shereen Elsayed, Lukas Brinkmeyer and Lars Schmidt-Thieme.
-Most of the proposed model for images based relied on using recommendation system pre-trained networks for items images features extraction. 
-Author of this research paper proposed to extract the latent item’s image features and refine the image features further and get better representation by jointly train the whole image network simultaneously with the recommender model. 
-The proposed model utilizes item's image features extracted by a calibrated ResNet50 component.
+
+Recomendation for given customer is divided in to three part: </br>
+1) Candinate Generation</br>
+2) Find the relevent item that customer might like from the generated candinates</br>
+3) Rank the generated candinates</br>
+
+
+- **Candinate Generation model**
+    </br>For candinate generation have use strategy:</br>
+    * Strategy 1: Recommend items purchase by similar user in last 1 week.</br>
+    * Strategy 2: Recommend most popularly item in last 1 week and other item that are purchase together with those by users.</br>
+    * Strategy 3: Recommend item popularly last year at same time. </br></br>
+
+- **Find the relevent item for the query user:** 
+</br>Generated candinate from the previous step is then pass to model that will classify items that are relevent to the query user based on there previous purchase.
+
+    Model is trained to learn lantent feature of user and item using the item images. Model implemented is based on  research paper <a href="https://arxiv.org/abs/2205.02923">"End-to-End Image-Based Fashion Recommendation"</a> by Shereen Elsayed, Lukas Brinkmeyer and Lars Schmidt-Thieme. Most of the proposed model for images based relied on using recommendation system pre-trained networks for items images features extraction. Author of this research paper proposed to extract the latent item’s image features and refine the image features further and get better representation by jointly train the whole image network simultaneously with the recommender model. The proposed model utilizes item's image features extracted by a calibrated ResNet50 component.
 
 </br>
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ![](references\Image-EtE.png)
-</br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Source of image: Taken from the [research paper](https://arxiv.org/abs/2205.02923)
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <img src="references\Image-EtE.png"/>
+</br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Source of image: Taken from the<a href="https://arxiv.org/abs/2205.02923">research paper</a>
 
-</br>So the main idea is while we are training the model to learn latent feature of the user and item by their interation data, we also back train the last layers of the image extraction model to fine tune the image embedding. This will futher help to learn user and item feature. 
-</br>Model output score that for a given user and an item.
+</br>   So the main idea is while we are training the model to learn latent feature of the user and item by their interation data, we also back train the last layers of the image extraction model to fine tune the image embedding. This will futher help to learn user and item feature. 
 
-</br>
-</br>
+- **Rank the generated candinates:**
+</br>Filtered candinate is then passed to the ranking model to sort the most relevent item at the top.
  
+
+
 # **Chalanges** #
+
 1) **Generation negative candidates**: 
 </br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Given only user transaction data we had only positive candidates i.e item's user's has purchase. We assume that the item user has purchase are the item's that they like. The strategy that I have experimened where </br>
@@ -47,35 +60,9 @@ The proposed model utilizes item's image features extracted by a calibrated ResN
 2) **Imbalance dataset**:
 </br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Number of negative candidates was in ratio of 10:1. So for a given 1 positive candinates we have 10 negative candidates. This ratio is based on the negative candiates we generated. 
-Approach that I have used is to ensemble different resampled datasets. So we building 10 models that use all the positive candidates and n-differing negative candiates per model.
+Approach that I have used is to ensemble different resampled datasets. So we building 10 models that use all the positive candidates and n-differing negative candiates per model. Output of the ensemble model is passed to Dense layer to predict if the user will like the item or not
 
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;![](references\StackedEnsemble.png)
-
-</br>
-</br>
-
-# **Working:**   </br>
-
-Recomendation for given customer is divided in to two part: </br>
-1) Candinate Generation</br>
-2) Rank the generated candinates</br>
-
-1) **Candinate Generation model**
-For candinate generation consider have use stragey:
-Stragey 1:
-    - Item user has purchase in last 1 week. 
-    - Find similar user who have puchase those same items. 
-    - Recommend the other items that simliary users has purchase in last 1 week
-
-Stragey 2:
-    - Recommend most populary item in last 1 week and 
-
-**Model Architecture:** 
-![](references\model.png)
-
-2) Rank the generated candinates
-
-
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="references\Stacked_Ensemble_Merge_model.png"/>
 
 </br>
 </br>
@@ -91,12 +78,18 @@ Stragey 2:
 
 # **Data Source** #
                  
-Step 1: Downloaded the data : [kaggle link](https://www.kaggle.com/competitions/h-and-m-personalized-fashion-recommendations/data)
-Step 2: Extract and copy the files in the data/raw/ folder
-</br>
+Step 1: Downloaded the data : [kaggle link](https://www.kaggle.com/competitions/h-and-m-personalized-fashion-recommendations/data)</br>
+Step 2: Extract and copy the files in the data/raw/ folder</br>
 </br>
 
 # **Requirements** #
 Refer requirements.txt 
 </br>
 </br>
+
+
+
+
+
+
+

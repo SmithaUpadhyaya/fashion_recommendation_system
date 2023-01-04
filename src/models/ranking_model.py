@@ -71,7 +71,9 @@ class ranking_model:
 
       repo_path =  os.path.join( 
                               #read_yaml_key(self.config_path, 'data_source', 'data_folders'),
-                              read_yaml_key(self.config_path, 'data_source', 'feature_folder'),                                
+                              #read_yaml_key(self.config_path, 'data_source', 'feature_folder'),
+                              read_yaml_key(self.config_path, 'feature_store', 'feature_store_folder')
+                                                              
                             )
 
       #Init FeatureStore
@@ -121,8 +123,10 @@ class ranking_model:
 
   def get_online_user_features(self, X):
 
-    if self.fs == None:
-      return X
+    #Old code before using Feast
+    #if self.fs == None:
+    #  X = self.get_user_previous_purchase_details(X)
+    #  return X
 
     X_User_Elapsed_Feat = self.fs.get_online_features(
                                                     entity_rows = X[['customer_id']].to_dict(orient = 'records'),                                   
@@ -151,9 +155,10 @@ class ranking_model:
 
   def get_training_item_features(self, X):
     
-    if self.fs == None:
-      X = self.get_items_previous_sales_details(X)
-      return X
+    #Old code before using Feast
+    #if self.fs == None:
+    #  X = self.get_items_previous_sales_details(X)
+    #  return X
     
     X = self.fs.get_historical_features(
                                         entity_df = X, 
@@ -164,9 +169,10 @@ class ranking_model:
   
   def get_online_item_features(self, X):
   
-    if self.fs == None:
-      X = self.get_items_previous_sales_details(X) 
-      return X
+    #Old code before using Feast
+    #if self.fs == None:
+    #  X = self.get_items_previous_sales_details(X) 
+    #  return X
 
     dt_items = X[['article_id']].drop_duplicates().reset_index(drop = True)
     X_Item_Feat = self.fs.get_online_features(
@@ -232,6 +238,57 @@ class ranking_model:
 
     return X
 
+  def get_user_previous_purchase_details(self, X):
+
+    USER_AVG_MEDIAN_PURCHASE_PRICE_LAST_8WEEK = os.path.join( 
+                                                                read_yaml_key(self.config_path,'data_source','data_folders'),
+                                                                read_yaml_key(self.config_path,'data_source','feature_folder'),
+                                                                read_yaml_key(self.config_path,'customer_features','customer_folder'),
+                                                                read_yaml_key(self.config_path,'customer_features','user_avg_median_purchase_price_last_8week'),
+                                                                )
+    user_purchase_detail = read_from_parquet(USER_AVG_MEDIAN_PURCHASE_PRICE_LAST_8WEEK)
+    #last_record_date = datetime(year = 2020, month = 9, day = 22)
+    #user_purchase_detail = user_purchase_detail[user_purchase_detail.t_dat == last_record_date - timedelta(days = 1)] 
+
+    X = X.merge(user_purchase_detail[[
+                                  'customer_id',                                  
+                                  'user_median_purchase_price',  
+                                ]], 
+               on = ['customer_id'], 
+               how = 'inner')
+
+    X.rename(columns = {'user_median_purchase_price': 'user_last8week_median_purchase_price'}, 
+             inplace = True)
+
+    del user_purchase_detail
+    gc.collect()
+
+    USER_AVG_MEDIAN_PURCHASE_PRICE = os.path.join( 
+                                                    read_yaml_key(self.config_path,'data_source','data_folders'),
+                                                    read_yaml_key(self.config_path,'data_source','feature_folder'),
+                                                    read_yaml_key(self.config_path,'customer_features','customer_folder'),
+                                                    read_yaml_key(self.config_path,'customer_features','user_avg_median_purchase_price'),
+                                                )
+
+    user_purchase_detail = read_from_parquet(USER_AVG_MEDIAN_PURCHASE_PRICE)
+    #last_record_date = datetime(year = 2020, month = 9, day = 22)
+    #user_purchase_detail = user_purchase_detail[user_purchase_detail.t_dat == last_record_date - timedelta(days = 1)] 
+
+    X = X.merge(user_purchase_detail[[
+                                  'customer_id',                                  
+                                  'user_median_purchase_price',  
+                                ]], 
+               on = ['customer_id'], 
+               how = 'inner')
+
+    X.rename(columns = {'user_median_purchase_price': 'user_overall_median_purchase_price'}, 
+                      inplace = True)
+
+    del user_purchase_detail
+    gc.collect()
+
+    return X       
+
   def get_items_previous_sales_details(self, X):
 
     ALL_ITEM_SALES_COUNT = os.path.join( 
@@ -243,8 +300,8 @@ class ranking_model:
                                         )
 
     item_sale_count = read_from_parquet(ALL_ITEM_SALES_COUNT)
-    last_record_date = datetime(year = 2020, month = 9, day = 22)
-    item_sale_count = item_sale_count[item_sale_count.t_dat == last_record_date - timedelta(days = 1)]
+    #last_record_date = datetime(year = 2020, month = 9, day = 22)
+    #item_sale_count = item_sale_count[item_sale_count.t_dat == last_record_date - timedelta(days = 1)]
 
     X = X.merge(item_sale_count[[
                                   'article_id',                                  
@@ -266,8 +323,8 @@ class ranking_model:
                                             read_yaml_key(self.config_path,'article_feature','item_avg_median_sales_price'),
                                         )
     item_median_sales_counts = read_from_parquet(ITEM_AVG_SALES_PRICE)
-    last_record_date = datetime(year = 2020, month = 9, day = 22)
-    item_median_sales_counts = item_median_sales_counts[item_median_sales_counts.t_dat == last_record_date - timedelta(days = 1)]
+    #last_record_date = datetime(year = 2020, month = 9, day = 22)
+    #item_median_sales_counts = item_median_sales_counts[item_median_sales_counts.t_dat == last_record_date - timedelta(days = 1)]
 
     X = X.merge(item_median_sales_counts[[
                                         'article_id',                                  
