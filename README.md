@@ -1,5 +1,3 @@
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="references\demo.gif" width="900" height="300" />
-
 # **H&M Fashion Recommendation System** #
 
 Recommender systems became one of the essential areas in the machine learning field. In our daily life, recommender systems affect us in one way or another, as they exist in almost all the current websites such as social media, shopping websites, and entertainment websites. Buying clothes online became a widespread trend nowadays.  In this regard, item images play a crucial role, no one wants to buy a new shirt without seeing how it looks like.
@@ -59,8 +57,8 @@ Recomendation for given customer is divided in to three part: </br>
 
 2) **Imbalance dataset**:
 </br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Number of negative candidates was in ratio of 10:1. So for a given 1 positive candinates we have 10 negative candidates. This ratio is based on the negative candiates we generated. 
-Approach that I have used is to ensemble different resampled datasets. So we building 10 models that use all the positive candidates and n-differing negative candiates per model. Output of the ensemble model is passed to Dense layer to predict if the user will like the item or not
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Number of negative candidates was in ratio of 10:1. So for a given 1 positive candinates we have 10 negative candidates. This ratio is based on the negative candiates we generated. Approach that I have used is to ensemble different resampled datasets. 
+So we building 10 models that use all the positive candidates and n-differing negative candiates per model. Output score of the ensemble models is then passed to Dense layer to predict if the user will like the item or not
 
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="references\Stacked_Ensemble_Merge_model.png"/>
 
@@ -71,9 +69,9 @@ Approach that I have used is to ensemble different resampled datasets. So we bui
 </br>
 1) Python 3.7.9 </br>
 2) Deep learning algorithm </br>
+3) Ranking LightGBM </br> 
 4) Streamlit </br>
 5) Feast </br>
-</br>
 </br>
 
 # **Data Source** #
@@ -86,6 +84,10 @@ Step 2: Extract and copy the files in the data/raw/ folder</br>
 Refer requirements.txt 
 </br>
 </br>
+
+# **Demo** #
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img src="references\demo.gif" />
+
 
 
 
