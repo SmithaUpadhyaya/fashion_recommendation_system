@@ -8,7 +8,7 @@ In fashion recommendation adding the items images to the model has proven to sho
 </br>
 
 # **Problem Statement** #
-Product recommendations are key to enhance customer exeperiance and help them to find the right product from huge corpus of products. When cusomer find the right product that are mostly like going to add the item to cart and which help in company revenue. 
+Product recommendations are key to enhance customer exeperiance and help them to find the right product from huge corpus of products. When customer find the right product that are mostly like going to add the item to cart and which help in company revenue. 
 
 </br>
 </br>
